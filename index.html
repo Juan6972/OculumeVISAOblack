@@ -409,5 +409,44 @@ src="https://www.facebook.com/tr?id=1855545619581029&amp;ev=PageView&amp;noscrip
     }, true);
   })();
 </script>
+<script>
+(() => {
+  const pixelId = '1855545619581029';
+  const viewKey = `meta:${pixelId}:ViewContent`;
+  let viewSent = false;
+  let viewTimer;
+
+  function sendViewContent() {
+    if (viewSent || typeof window.fbq !== 'function') return;
+    viewSent = true;
+    window.clearTimeout(viewTimer);
+    window.removeEventListener('scroll', checkScroll);
+    try {
+      if (sessionStorage.getItem(viewKey)) return;
+      sessionStorage.setItem(viewKey, '1');
+    } catch {
+      // The page-level guard still applies if storage is unavailable.
+    }
+    window.fbq('trackSingle', pixelId, 'ViewContent');
+  }
+
+  function checkScroll() {
+    const root = document.scrollingElement || document.documentElement;
+    const scrollable = root.scrollHeight - root.clientHeight;
+    if (scrollable > 0 && root.scrollTop >= scrollable * 0.25) sendViewContent();
+  }
+
+  viewTimer = window.setTimeout(sendViewContent, 5000);
+  window.addEventListener('scroll', checkScroll, { passive: true });
+  checkScroll();
+
+  document.addEventListener('click', (event) => {
+    const link = event.target instanceof Element && event.target.closest('a[href]');
+    if (link?.hostname === 'order.wealthpay.io' && typeof window.fbq === 'function') {
+      window.fbq('trackSingle', pixelId, 'InitiateCheckout');
+    }
+  }, true);
+})();
+</script>
 </body>
 </html>
